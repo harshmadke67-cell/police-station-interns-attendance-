@@ -475,25 +475,25 @@ async function exitStation() {
   } catch (e) {
     toast(e.message);
   }
+}
 
-  async function submitManualCode() {
-    const input = $('manualCodeInput');
-    const code = input?.value.trim();
-    if (!code) {
-      toast('Enter the office backup code.');
-      input?.focus();
-      return;
-    }
-    try {
-      const res = await api('/api/attendance/manual', {
-        method: 'POST',
-        body: JSON.stringify({ code })
-      });
-      if (input) input.value = '';
-      showResult(true, res);
-    } catch (e) {
-      showResult(false, { error: e.message });
-    }
+async function submitManualCode() {
+  const input = $('manualCodeInput');
+  const code = input?.value.trim();
+  if (!code) {
+    toast('Enter the office backup code.');
+    input?.focus();
+    return;
+  }
+  try {
+    const res = await api('/api/attendance/manual', {
+      method: 'POST',
+      body: JSON.stringify({ code })
+    });
+    if (input) input.value = '';
+    showResult(true, res);
+  } catch (e) {
+    showResult(false, { error: e.message });
   }
 }
 
