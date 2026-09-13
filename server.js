@@ -69,6 +69,23 @@ const dbAdmin = () => supabaseAdmin || supabase;
 
 const app = express();
 
+function getConfigurationStatus() {
+  return {
+    supabase_url_configured: Boolean(SUPABASE_URL),
+    supabase_anon_key_configured: Boolean(SUPABASE_ANON_KEY),
+    supabase_service_key_configured: Boolean(SUPABASE_SERVICE_KEY),
+    office_email_configured: Boolean(OFFICE_EMAIL),
+    office_password_configured: Boolean(OFFICE_PASSWORD),
+    production_ready: Boolean(
+      SUPABASE_URL &&
+      SUPABASE_ANON_KEY &&
+      SUPABASE_SERVICE_KEY &&
+      OFFICE_EMAIL &&
+      OFFICE_PASSWORD
+    )
+  };
+}
+
 // ============================================================
 // MIDDLEWARE
 // ============================================================
@@ -213,12 +230,23 @@ function requireRole(role) {
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
+  const configuration = getConfigurationStatus();
+  if (!configuration.production_ready && IS_PRODUCTION) {
+    return res.status(503).json({
+      system: 'misconfigured',
+      database: 'unavailable',
+      configuration,
+      timestamp: new Date().toISOString()
+    });
+  }
+
   try {
     const { error } = await dbAdmin().from('units').select('id').limit(1);
     if (error) throw error;
     res.json({
       system: 'secure',
       database: 'online',
+      configuration,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -226,6 +254,7 @@ app.get('/api/health', async (req, res) => {
     res.status(503).json({
       system: 'degraded',
       database: 'offline',
+      configuration,
       timestamp: new Date().toISOString()
     });
   }
@@ -235,7 +264,8 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/config', (req, res) => {
   res.json({
     supabaseUrl: SUPABASE_URL,
-    supabaseAnonKey: SUPABASE_ANON_KEY
+    supabaseAnonKey: SUPABASE_ANON_KEY,
+    configuration: getConfigurationStatus()
   });
 });
 
