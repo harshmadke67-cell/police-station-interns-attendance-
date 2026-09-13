@@ -755,7 +755,8 @@ async function refreshAttendance() {
   try {
     const params = new URLSearchParams({
       unit_id: currentUser?.unit_id || '',
-      station_id: currentUser?.police_station_id || ''
+      station_id: currentUser?.police_station_id || '',
+      attendance_date: $('attendanceDate')?.value || getClientISTDate()
     });
     const d = await api(`/api/office/attendance?${params}`);
     officeRows = d.records;
@@ -764,6 +765,17 @@ async function refreshAttendance() {
   } catch (e) {
     toast(e.message);
   }
+}
+
+function getClientISTDate() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
 }
 
 function setFilter(f) {
@@ -816,6 +828,8 @@ function renderAttendance() {
 // ============================================================
 document.addEventListener('DOMContentLoaded', initAuth);
 window.onload = () => {
+  const attendanceDate = $('attendanceDate');
+  if (attendanceDate) attendanceDate.value = getClientISTDate();
   loadUnits().catch(console.error);
 };
 
