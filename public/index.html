@@ -84,6 +84,8 @@
 <form onsubmit="login(event,'office')">
 <label for="oident">Email</label><input id="oident" autocomplete="username" required>
 <label for="opass">Password</label><input id="opass" type="password" autocomplete="current-password" required>
+<label for="officeUnit">Zone / Unit</label><select id="officeUnit" required><option value="">Select zone / unit</option></select>
+<label for="officeStation">Police station</label><select id="officeStation" required disabled><option value="">Select police station</option></select>
 <label class="rememberField"><input id="officeRemember" type="checkbox"> <span>Remember me on this device</span></label>
 <button class="liquidMetalButton">Secure sign in</button>
 </form>

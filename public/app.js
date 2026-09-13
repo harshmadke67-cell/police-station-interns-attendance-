@@ -208,6 +208,12 @@ async function initAuth() {
       currentToken = stored;
       const user = await api('/api/me');
       currentUser = user.user;
+        const savedAssignment = storage.getItem('stationtrack_office_assignment');
+        if (currentUser.role === 'office' && savedAssignment) {
+          try {
+            Object.assign(currentUser, JSON.parse(savedAssignment));
+          } catch {}
+        }
       setAuthenticatedChrome(true);
       
       if (currentUser.role === 'student') {
@@ -219,6 +225,8 @@ async function initAuth() {
       localStorage.removeItem('stationtrack_token');
       sessionStorage.removeItem('stationtrack_token');
       localStorage.removeItem('stationtrack_remember');
+      localStorage.removeItem('stationtrack_office_assignment');
+      sessionStorage.removeItem('stationtrack_office_assignment');
       show('home');
     }
   } else {
@@ -251,6 +259,7 @@ if (logoutBtn) {
 async function loadUnits() {
   try {
     const units = await api('/api/units');
+    setupOfficeAssignmentFields(units);
     const unique = [...new Map(units.map(x => [x.unit_id, x])).values()];
     const unitSelect = $('runit');
     if (unitSelect) {
@@ -307,6 +316,30 @@ const LOGIN_FIELDS = {
   office: ['oident', 'opass', 'officeRemember']
 };
 
+let availableAssignments = [];
+
+function populateOfficeStations() {
+  const unitSelect = $('officeUnit');
+  const stationSelect = $('officeStation');
+  if (!unitSelect || !stationSelect) return;
+  const selectedUnit = unitSelect.value;
+  const stations = availableAssignments.filter(x => x.unit_id === selectedUnit);
+  stationSelect.innerHTML = '<option value="">Select police station</option>' +
+    stations.map(x => `<option value="${x.station_id}">${escapeHtml(x.station_name)}</option>`).join('');
+  stationSelect.disabled = !selectedUnit || stations.length === 0;
+}
+
+function setupOfficeAssignmentFields(units) {
+  availableAssignments = units;
+  const unitSelect = $('officeUnit');
+  if (!unitSelect) return;
+  const unique = [...new Map(units.map(x => [x.unit_id, x])).values()];
+  unitSelect.innerHTML = '<option value="">Select zone / unit</option>' +
+    unique.map(x => `<option value="${x.unit_id}">${escapeHtml(x.unit_name)}</option>`).join('');
+  unitSelect.onchange = populateOfficeStations;
+  populateOfficeStations();
+}
+
 async function login(e, role) {
   e.preventDefault();
   try {
@@ -321,14 +354,30 @@ async function login(e, role) {
 
     const email = identField.value;
     const password = passField.value;
+    const assignment = role === 'office'
+      ? { unit_id: $('officeUnit')?.value, station_id: $('officeStation')?.value }
+      : null;
+    if (role === 'office' && (!assignment.unit_id || !assignment.station_id)) {
+      toast('Select the office zone/unit and police station.');
+      return;
+    }
 
     const res = await api('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password, role })
+      body: JSON.stringify({ email, password, role, ...(assignment || {}) })
     });
 
     currentToken = res.access_token;
     currentUser = res.user;
+    if (role === 'office') {
+      const targetStorage = rememberField.checked ? localStorage : sessionStorage;
+      targetStorage.setItem('stationtrack_office_assignment', JSON.stringify({
+        unit_id: res.user.unit_id,
+        unit_name: res.user.unit_name,
+        police_station_id: res.user.police_station_id,
+        station_name: res.user.station_name
+      }));
+    }
     localStorage.removeItem('stationtrack_token');
     sessionStorage.removeItem('stationtrack_token');
     if (rememberField.checked) {
@@ -567,6 +616,10 @@ let attendanceTimer = null;
 async function loadOffice() {
   try {
     const m = await api('/api/me');
+    if (currentUser?.role === 'office' && currentUser.unit_id && currentUser.police_station_id) {
+      Object.assign(m.user, currentUser);
+    }
+    currentUser = m.user;
     const oname = $('oname');
     const ounit = $('ounit');
     const ostation = $('ostation');
@@ -611,7 +664,10 @@ let lastQr = null;
 
 async function generateQR() {
   try {
-    const d = await api('/api/office/qr', { method: 'POST' });
+    const d = await api('/api/office/qr', { method: 'POST', body: JSON.stringify({
+      unit_id: currentUser?.unit_id,
+      station_id: currentUser?.police_station_id
+    }) });
     applyQr(d);
   } catch (e) {
     toast(e.message);
@@ -620,7 +676,10 @@ async function generateQR() {
 
 async function regenerateQR() {
   try {
-    const d = await api('/api/office/qr/regenerate', { method: 'POST' });
+    const d = await api('/api/office/qr/regenerate', { method: 'POST', body: JSON.stringify({
+      unit_id: currentUser?.unit_id,
+      station_id: currentUser?.police_station_id
+    }) });
     applyQr(d);
     toast('New QR issued — the previous image no longer works.');
   } catch (e) {
@@ -653,7 +712,11 @@ function hideFullscreen() {
 
 async function refreshAttendance() {
   try {
-    const d = await api('/api/office/attendance');
+    const params = new URLSearchParams({
+      unit_id: currentUser?.unit_id || '',
+      station_id: currentUser?.police_station_id || ''
+    });
+    const d = await api(`/api/office/attendance?${params}`);
     officeRows = d.records;
     animateNumber($('totalRegistered'), d.total_students);
     renderAttendance();
