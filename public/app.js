@@ -105,6 +105,10 @@ function toggleMenu() {
   $('mobileMenu')?.classList.toggle('hidden');
 }
 
+function closeMenu() {
+  $('mobileMenu')?.classList.add('hidden');
+}
+
 function setAuthenticatedChrome(authenticated) {
   $('logout')?.classList.toggle('hidden', !authenticated);
   $('menuToggle')?.classList.toggle('hidden', !authenticated);
@@ -113,7 +117,7 @@ function setAuthenticatedChrome(authenticated) {
 }
 
 function navigateStudent(screenId) {
-  toggleMenu();
+  closeMenu();
   show(screenId);
   $('mobileNav')?.classList.toggle('hidden', !currentUser || currentUser.role !== 'student');
   if (screenId === 'studentHistory') loadHistory();
@@ -471,6 +475,26 @@ async function exitStation() {
   } catch (e) {
     toast(e.message);
   }
+
+  async function submitManualCode() {
+    const input = $('manualCodeInput');
+    const code = input?.value.trim();
+    if (!code) {
+      toast('Enter the office backup code.');
+      input?.focus();
+      return;
+    }
+    try {
+      const res = await api('/api/attendance/manual', {
+        method: 'POST',
+        body: JSON.stringify({ code })
+      });
+      if (input) input.value = '';
+      showResult(true, res);
+    } catch (e) {
+      showResult(false, { error: e.message });
+    }
+  }
 }
 
 document.addEventListener('keydown', event => {
@@ -700,6 +724,19 @@ function applyQr(d) {
   if (qr) qr.src = d.qr;
   if (qrDateLine) qrDateLine.textContent = `${d.date} · valid until 11:59 PM`;
   if (fsQrImg) fsQrImg.src = d.qr;
+  const manualCode = $('manualCode');
+  if (manualCode) manualCode.textContent = d.manual_code || '—';
+}
+
+async function copyManualCode() {
+  const code = $('manualCode')?.textContent;
+  if (!code || code === '—') return toast('Generate today’s QR first.');
+  try {
+    await navigator.clipboard.writeText(code);
+    toast('Backup code copied.');
+  } catch {
+    toast(`Backup code: ${code}`);
+  }
 }
 
 function showFullscreen() {
@@ -764,6 +801,7 @@ function renderAttendance() {
   if (attendanceRows) {
     attendanceRows.innerHTML = rows.length ? rows.map(x => `
       <tr>
+        <td>${escapeHtml(x.attendance_date || '—')}</td>
         <td>${escapeHtml(x.name)}</td>
         <td>${escapeHtml(x.student_id)}</td>
         <td>${escapeHtml(x.unit_name)}</td>
@@ -772,7 +810,7 @@ function renderAttendance() {
         <td><span class="badge ${x.status.toLowerCase()}">${escapeHtml(x.status)}</span></td>
         <td>${x.check_out ? fmtTime(x.check_out) : 'Inside'}</td>
       </tr>
-    `).join('') : '<tr><td colspan="7">No matching attendance records.</td></tr>';
+    `).join('') : '<tr><td colspan="8">No matching attendance records.</td></tr>';
   }
 }
 
@@ -790,6 +828,9 @@ window.toast = toast;
 window.login = login;
 window.register = register;
 window.togglePassword = togglePassword;
+window.closeMenu = closeMenu;
+window.submitManualCode = submitManualCode;
+window.copyManualCode = copyManualCode;
 window.forgotPassword = forgotPassword;
 window.loadUnits = loadUnits;
 window.startScan = startScan;
