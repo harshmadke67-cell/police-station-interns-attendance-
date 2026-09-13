@@ -1033,7 +1033,6 @@ const handleOfficeAttendance = async (req, res) => {
         id: a.id,
         attendance_date: a.attendance_date,
         name: sp?.full_name || 'Cyber Intern',
-        student_id: sp?.student_id || 'STU',
         unit_name: unit?.name || '',
         station_name: station?.name || '',
         check_in: a.check_in,
