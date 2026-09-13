@@ -644,7 +644,11 @@ async function loadOffice() {
 
 async function refreshStatus() {
   try {
-    const s = await api('/api/system/status');
+    const params = new URLSearchParams({
+      unit_id: currentUser?.unit_id || '',
+      station_id: currentUser?.police_station_id || ''
+    });
+    const s = await api(`/api/system/status?${params}`);
     setDot('dotDb', s.database ? 'on' : 'off');
     setDot('dotAtt', s.attendance_service ? 'on' : 'off');
     setDot('dotQr', s.qr_ready_today ? 'on' : 'warn');
