@@ -8,8 +8,8 @@
 // ============================================================
 // These are loaded from environment variables at runtime
 // If running in development, they may be injected by the build system
-const SUPABASE_URL = window.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'VITE_SUPABASE_URL_PLACEHOLDER';
-const SUPABASE_ANON_KEY = window.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'VITE_SUPABASE_ANON_KEY_PLACEHOLDER';
+const SUPABASE_URL = window.VITE_SUPABASE_URL || 'VITE_SUPABASE_URL_PLACEHOLDER';
+const SUPABASE_ANON_KEY = window.VITE_SUPABASE_ANON_KEY || 'VITE_SUPABASE_ANON_KEY_PLACEHOLDER';
 
 // Will be replaced by build system or set from window
 let currentUser = null;
