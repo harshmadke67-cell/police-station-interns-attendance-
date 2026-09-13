@@ -1045,6 +1045,7 @@ const handleOfficeAttendance = async (req, res) => {
     const records = (attendance || []).map(a => {
       const sp = studentMap.get(a.student_id);
       return {
+        student_id: a.student_id,
         id: a.id,
         attendance_date: a.attendance_date,
         name: sp?.full_name || 'Cyber Intern',
@@ -1055,9 +1056,23 @@ const handleOfficeAttendance = async (req, res) => {
         status: a.status === 'present' ? 'Present' : 'Late'
       };
     });
+    const attendedIds = new Set((attendance || []).map(a => a.student_id));
+    const absentRecords = (students || [])
+      .filter(student => !attendedIds.has(student.auth_user_id))
+      .map(student => ({
+        student_id: student.auth_user_id,
+        id: null,
+        attendance_date: selectedDate,
+        name: student.full_name,
+        unit_name: unit?.name || '',
+        station_name: station?.name || '',
+        check_in: null,
+        check_out: null,
+        status: 'Absent'
+      }));
 
     res.json({
-      records,
+      records: [...records, ...absentRecords],
       total_students: (students || []).length,
       attendance_date: selectedDate
     });
@@ -1069,6 +1084,52 @@ const handleOfficeAttendance = async (req, res) => {
 
 app.get('/api/office/attendance', verifyAuth, requireRole(OFFICE_ROLE), handleOfficeAttendance);
 app.get('/api/officer/attendance', verifyAuth, requireRole(OFFICE_ROLE), handleOfficeAttendance);
+
+// Office-only student management. Deleting a student removes their auth account,
+// profile, attendance history, and related records through the database cascades.
+app.get('/api/office/students', verifyAuth, requireRole(OFFICE_ROLE), async (req, res) => {
+  try {
+    const client = dbAdmin();
+    const assignment = await resolveOfficeAssignment(client, req.profile, req.query);
+    const { data, error } = await client
+      .from('profiles')
+      .select('auth_user_id, full_name, email, created_at')
+      .eq('unit_id', assignment.unit_id)
+      .eq('police_station_id', assignment.police_station_id)
+      .eq('role', STUDENT_ROLE)
+      .order('full_name');
+    if (error) throw error;
+    res.json({ students: data || [] });
+  } catch (error) {
+    console.error('Office student list error:', error);
+    res.status(500).json({ error: 'Failed to load registered students' });
+  }
+});
+
+app.delete('/api/office/students/:studentId', verifyAuth, requireRole(OFFICE_ROLE), async (req, res) => {
+  try {
+    if (!supabaseAdmin) return res.status(503).json({ error: 'Account management is not configured' });
+    const client = dbAdmin();
+    const assignment = await resolveOfficeAssignment(client, req.profile, req.query);
+    const { data: student, error: studentError } = await client
+      .from('profiles')
+      .select('auth_user_id, full_name')
+      .eq('auth_user_id', req.params.studentId)
+      .eq('unit_id', assignment.unit_id)
+      .eq('police_station_id', assignment.police_station_id)
+      .eq('role', STUDENT_ROLE)
+      .maybeSingle();
+    if (studentError) throw studentError;
+    if (!student) return res.status(404).json({ error: 'Student not found in the selected assignment' });
+
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(student.auth_user_id);
+    if (deleteError) throw deleteError;
+    res.json({ message: `${student.full_name} was permanently removed` });
+  } catch (error) {
+    console.error('Office student deletion error:', error);
+    res.status(500).json({ error: 'Failed to permanently remove student' });
+  }
+});
 
 // System Status Indicators
 app.get('/api/system/status', verifyAuth, async (req, res) => {
