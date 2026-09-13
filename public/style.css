@@ -69,7 +69,7 @@ header{height:68px;display:flex;align-items:center;justify-content:space-between
 .clock{font-family:var(--font-mono);font-size:12px;color:var(--ink-dim)}
 
 main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 24px}
-.screen{padding:48px 0 70px;animation:screenIn .28s ease both}
+.screen{padding:48px 0 70px;animation:screenIn .38s cubic-bezier(.22,1,.36,1) both;will-change:opacity,transform}
 @keyframes screenIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.screen{animation:none}}
 .hidden{display:none!important}
@@ -279,6 +279,9 @@ form button[type=submit],form>button:last-child{margin-top:18px}
 .qrMeta .valid{color:var(--green-bright);font-size:12px;letter-spacing:.04em}
 .qrMeta .dateLine{color:var(--ink-dim);font-size:11px}
 .qrActions{display:flex;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+.manualCodeBox{margin-top:18px;padding:13px 14px;border:1px solid var(--line-bright);border-radius:10px;background:var(--panel-inset);display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+.manualCodeBox strong{display:block;margin-top:3px;color:var(--cyan);font:600 18px var(--font-mono);letter-spacing:.14em}
+.manualCodeBox p{grid-column:1/-1;margin:7px 0 0;color:var(--ink-faint);font-size:11px}
 
 /* stats */
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
@@ -319,6 +322,10 @@ tbody tr.rowIn{animation:rowIn .35s ease both}
   display:grid;place-items:center;font-size:22px;margin:0 auto 14px}
 .verifyCard p{color:var(--ink-dim);font-size:13px;margin-bottom:18px}
 .recordBox{margin-top:18px;text-align:left}
+.manualEntry{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);text-align:left}
+.manualEntry label{display:block;color:var(--ink-dim);font-size:12px;margin-bottom:8px}
+.manualEntryRow{display:flex;gap:8px}
+.manualEntryRow input{min-width:0;flex:1;text-transform:uppercase}
 .studentWelcome{display:flex;justify-content:space-between;align-items:center;gap:18px}
 .studentWelcome h3{margin:4px 0 0}
 .studentStats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px}
@@ -425,8 +432,8 @@ form.inline input,form.inline select{width:auto;flex:1;min-width:140px}
   .scanClose{margin-top:auto;width:100%;min-height:48px}
   .profileGrid{grid-template-columns:1fr;gap:0}
   .profileGrid .card{margin-bottom:10px}
-  .mobileMenu{display:flex;position:fixed;inset:0 0 0 auto;width:min(86vw,320px);z-index:100;background:var(--panel);border-left:1px solid var(--line-bright);padding:18px;flex-direction:column;gap:10px;box-shadow:-12px 0 30px rgba(0,0,0,.35)}
-  .mobileMenu.hidden{display:none}
+  .mobileMenu{display:flex;position:fixed;inset:0 0 0 auto;width:min(86vw,320px);z-index:100;background:var(--panel);border-left:1px solid var(--line-bright);padding:18px;flex-direction:column;gap:10px;box-shadow:-12px 0 30px rgba(0,0,0,.35);opacity:1;transform:translateX(0);visibility:visible;transition:transform .34s cubic-bezier(.22,1,.36,1),opacity .24s ease,visibility .34s}
+  .mobileMenu.hidden{display:flex!important;opacity:0;transform:translateX(105%);visibility:hidden;pointer-events:none}
   .mobileMenu button{width:100%;text-align:left;min-height:46px}
   .mobileMenu .menuAction{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:rgba(18,26,22,.72);color:var(--ink-dim);transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
   .mobileMenu .menuAction span{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--green-deep);color:var(--green-bright);font-family:var(--font-mono)}
@@ -451,6 +458,16 @@ form.inline input,form.inline select{width:auto;flex:1;min-width:140px}
   form.inline input,form.inline select{width:100%}
   .filterBar{flex-direction:column;align-items:stretch}
   #searchInput{max-width:none}
+  .manualCodeBox{align-items:flex-start;flex-wrap:wrap}
+  .manualCodeBox p{flex-basis:100%}
+  #attendanceRows td:nth-child(1)::before{content:'DATE'}
+  #attendanceRows td:nth-child(2)::before{content:'STUDENT'}
+  #attendanceRows td:nth-child(3)::before{content:'STUDENT ID'}
+  #attendanceRows td:nth-child(4)::before{content:'ASSIGNMENT'}
+  #attendanceRows td:nth-child(5)::before{content:'POLICE STATION'}
+  #attendanceRows td:nth-child(6)::before{content:'CHECK-IN'}
+  #attendanceRows td:nth-child(7)::before{content:'STATUS'}
+  #attendanceRows td:nth-child(8)::before{content:'CHECK-OUT'}
 }
 
 @media(max-width:360px){
