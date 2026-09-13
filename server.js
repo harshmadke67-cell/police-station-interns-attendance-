@@ -1007,11 +1007,24 @@ app.get('/api/system/status', verifyAuth, async (req, res) => {
     let qrReadyToday = false;
 
     if (req.user) {
+      const { data: profile } = await client
+        .from('profiles')
+        .select('*')
+        .eq('auth_user_id', req.user.id)
+        .single();
+      const assignment = profile?.role === OFFICE_ROLE
+        ? await resolveOfficeAssignment(client, profile, req.query)
+        : {
+            unit_id: profile?.unit_id,
+            police_station_id: profile?.police_station_id
+          };
       const { data: qr } = await client
         .from('daily_qr_tokens')
         .select('id')
         .eq('office_user_id', req.user.id)
         .eq('qr_date', today)
+        .eq('unit_id', assignment.unit_id)
+        .eq('police_station_id', assignment.police_station_id)
         .eq('active', true)
         .maybeSingle();
       qrReadyToday = !!qr;
