@@ -175,6 +175,10 @@ function computeQrToken(officeUserId, qrSecret, qrDate, generation) {
     .digest('hex');
 }
 
+function manualCodeForToken(token) {
+  return clean(token).slice(0, 10).toUpperCase();
+}
+
 // ============================================================
 // AUTHENTICATION MIDDLEWARE
 // ============================================================
@@ -756,6 +760,58 @@ const handleMarkAttendance = async (req, res) => {
 app.post('/api/attendance/mark', verifyAuth, handleMarkAttendance);
 app.post('/api/attendance/verify', verifyAuth, handleMarkAttendance);
 
+app.post('/api/attendance/manual', verifyAuth, async (req, res) => {
+  try {
+    const code = clean(req.body?.code).toUpperCase();
+    if (!code) return res.status(400).json({ error: 'MANUAL VERIFICATION FAILED: Code is required' });
+    const client = dbAdmin();
+    const { data: profile, error: profileErr } = await client
+      .from('profiles').select('*').eq('auth_user_id', req.user.id).single();
+    if (profileErr || !profile || profile.role !== STUDENT_ROLE) {
+      return res.status(403).json({ error: 'ACCESS DENIED: Only students can mark attendance' });
+    }
+    const today = getISTDate();
+    const { data: qrRecords, error: qrErr } = await client
+      .from('daily_qr_tokens').select('*').eq('qr_date', today).eq('active', true);
+    if (qrErr) throw qrErr;
+    const qrRecord = (qrRecords || []).find(record =>
+      manualCodeForToken(record.token) === code &&
+      record.unit_id === profile.unit_id &&
+      record.police_station_id === profile.police_station_id
+    );
+    if (!qrRecord) {
+      return res.status(400).json({ error: 'MANUAL VERIFICATION FAILED: Code is invalid, expired, or not valid for your assigned station.' });
+    }
+    const { data: existingAtt } = await client
+      .from('attendance').select('id').eq('student_id', req.user.id).eq('attendance_date', today).maybeSingle();
+    if (existingAtt) return res.status(409).json({ error: 'ALREADY MARKED: Attendance has already been recorded today.' });
+    const now = new Date();
+    const { data: attendance, error: insErr } = await client.from('attendance').insert({
+      student_id: req.user.id,
+      unit_id: profile.unit_id,
+      police_station_id: profile.police_station_id,
+      qr_token_id: qrRecord.id,
+      attendance_date: today,
+      check_in: now.toISOString(),
+      status: attendanceStatus(now)
+    }).select().single();
+    if (insErr) {
+      if (insErr.code === '23505') return res.status(409).json({ error: 'ALREADY MARKED: Attendance has already been recorded today.' });
+      throw insErr;
+    }
+    res.json({
+      name: profile.full_name,
+      student_id: profile.student_id,
+      check_in: attendance.check_in,
+      status: attendance.status.charAt(0).toUpperCase() + attendance.status.slice(1),
+      attendance
+    });
+  } catch (error) {
+    console.error('Manual attendance error:', error);
+    res.status(500).json({ error: error.message || 'Manual attendance verification failed' });
+  }
+});
+
 // Record checkout
 app.post('/api/attendance/exit', verifyAuth, async (req, res) => {
   try {
@@ -851,6 +907,7 @@ const handleOfficeQR = async (req, res) => {
     res.json({
       qr: qrImage,
       token: qrRecord.token,
+      manual_code: manualCodeForToken(qrRecord.token),
       date: today,
       valid_until: '11:59 PM',
       generation: qrRecord.generation || 1
@@ -915,6 +972,7 @@ app.post('/api/office/qr/regenerate', verifyAuth, requireRole(OFFICE_ROLE), asyn
     res.json({
       qr: qrImage,
       token: newToken,
+      manual_code: manualCodeForToken(newToken),
       date: today,
       valid_until: '11:59 PM',
       generation: newGeneration
@@ -973,6 +1031,7 @@ const handleOfficeAttendance = async (req, res) => {
       const sp = studentMap.get(a.student_id);
       return {
         id: a.id,
+        attendance_date: a.attendance_date,
         name: sp?.full_name || 'Cyber Intern',
         student_id: sp?.student_id || 'STU',
         unit_name: unit?.name || '',
