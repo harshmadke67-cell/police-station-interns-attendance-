@@ -793,9 +793,7 @@ function renderAttendance() {
   else if (currentFilter === 'inside') rows = rows.filter(x => !x.check_out);
   else if (currentFilter === 'out') rows = rows.filter(x => x.check_out);
 
-  if (q) rows = rows.filter(x => 
-    x.name.toLowerCase().includes(q) || x.student_id.toLowerCase().includes(q)
-  );
+  if (q) rows = rows.filter(x => x.name.toLowerCase().includes(q));
 
   const attendanceRows = $('attendanceRows');
   if (attendanceRows) {
@@ -803,14 +801,13 @@ function renderAttendance() {
       <tr>
         <td>${escapeHtml(x.attendance_date || '—')}</td>
         <td>${escapeHtml(x.name)}</td>
-        <td>${escapeHtml(x.student_id)}</td>
         <td>${escapeHtml(x.unit_name)}</td>
         <td>${escapeHtml(x.station_name)}</td>
         <td>${fmtTime(x.check_in)}</td>
         <td><span class="badge ${x.status.toLowerCase()}">${escapeHtml(x.status)}</span></td>
         <td>${x.check_out ? fmtTime(x.check_out) : 'Inside'}</td>
       </tr>
-    `).join('') : '<tr><td colspan="8">No matching attendance records.</td></tr>';
+    `).join('') : '<tr><td colspan="7">No matching attendance records.</td></tr>';
   }
 }
 
