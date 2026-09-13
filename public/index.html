@@ -186,7 +186,9 @@
 <button class="chip" data-filter="out" onclick="setFilter('out')">Checked Out</button>
 </div>
 <label for="searchInput" class="visually-hidden">Search student</label>
-<input id="searchInput" placeholder="Search name or student ID" oninput="renderAttendance()">
+<input id="searchInput" placeholder="Search by student name" oninput="renderAttendance()">
+<label for="attendanceDate" class="visually-hidden">Attendance date</label>
+<input id="attendanceDate" type="date" onchange="refreshAttendance()" aria-label="Filter attendance by date">
 </div>
 <div class="tableWrap"><table><thead><tr><th>Date</th><th>Student</th><th>Assignment</th><th>Police Station</th><th>Check-in</th><th>Status</th><th>Check-out</th></tr></thead><tbody id="attendanceRows"></tbody></table></div>
 </div>
