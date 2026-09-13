@@ -9,8 +9,8 @@
   --red:#ef4a5f; --red-deep:#3a1420;
   --gray-status:#6d7b74;
   --cyan:#35d1e0; --cyan-deep:#0d2d30;
-  --font-display:'Space Grotesk',ui-sans-serif,system-ui,sans-serif;
-  --font-body:ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --font-display:'Segoe UI',Arial,sans-serif;
+  --font-body:'Segoe UI',Arial,sans-serif;
   --font-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',monospace;
   --radius:14px;
   --metal-light:#f7fbff;
@@ -22,6 +22,7 @@ html{background:var(--void)}
 body{
   margin:0;background:var(--void);color:var(--ink);
   font:15px/1.6 var(--font-body);
+  font-synthesis:none;text-rendering:optimizeLegibility;
   min-height:100vh;position:relative;
 }
 h1,h2,h3,.mono{font-family:var(--font-display)}
@@ -303,6 +304,11 @@ form button[type=submit],form>button:last-child{margin-top:18px}
 .chip.active{background:var(--green-deep);border-color:var(--green);color:var(--green-bright)}
 #searchInput{max-width:230px}
 .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+.dangerNotice{border-color:rgba(239,74,95,.45);background:rgba(58,20,32,.45);margin-bottom:16px}
+.dangerNotice strong{color:#ff8090}
+.dangerNotice p{margin:4px 0 0;color:var(--ink-dim)}
+.dangerButton{background:var(--red-deep);border:1px solid rgba(239,74,95,.55);color:#ff9aa6;padding:8px 11px;font-size:11px}
+.manageStudentsButton{margin-top:12px}
 table{width:100%;border-collapse:collapse}
 th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);font-size:12.5px;white-space:nowrap}
 th{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--ink-dim);text-transform:uppercase;background:var(--panel-raised)}
@@ -311,6 +317,7 @@ tbody tr.rowIn{animation:rowIn .35s ease both}
 @keyframes rowIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){tbody tr.rowIn{animation:none}}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;font-size:10.5px;letter-spacing:.03em}
+.badge.absent{color:#ff9aa6;background:var(--red-deep);border:1px solid rgba(239,74,95,.45)}
 .badge.present{background:var(--green-deep);color:var(--green-bright)}
 .badge.late{background:var(--amber-deep);color:var(--amber)}
 .badge.inside{background:var(--cyan-deep);color:var(--cyan)}
