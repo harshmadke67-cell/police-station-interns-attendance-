@@ -102,6 +102,10 @@
 <div class="vIcon">◆</div><div class="kicker">TODAY'S ATTENDANCE</div><h3 id="attendanceState">NOT MARKED</h3>
 <p>Scan the office's verification QR to mark today's attendance. It stays valid for the entire day.</p>
 <button class="liquidMetalButton" onclick="startScan()">Scan Attendance QR</button>
+<div class="manualEntry">
+<label for="manualCodeInput">QR not working? Enter the office backup code</label>
+<div class="manualEntryRow"><input id="manualCodeInput" inputmode="text" autocomplete="one-time-code" maxlength="12" placeholder="Enter daily code"><button class="ghost" onclick="submitManualCode()">Mark present</button></div>
+</div>
 <div class="recordBox" id="studentRecord">Loading…</div>
 </div>
 <div class="studentStats">
@@ -156,6 +160,11 @@
 <button class="ghost" onclick="regenerateQR()">Regenerate</button>
 <button class="ghost" onclick="showFullscreen()">Display fullscreen</button>
 </div>
+<div class="manualCodeBox">
+<div><span class="kicker">QR BACKUP CODE</span><strong id="manualCode">—</strong></div>
+<button class="ghost" onclick="copyManualCode()">Copy code</button>
+<p>Use this daily code only when scanning is unavailable.</p>
+</div>
 </div>
 
 <div>
@@ -179,7 +188,7 @@
 <label for="searchInput" class="visually-hidden">Search student</label>
 <input id="searchInput" placeholder="Search name or student ID" oninput="renderAttendance()">
 </div>
-<div class="tableWrap"><table><thead><tr><th>Student</th><th>Student ID</th><th>Assignment</th><th>Police Station</th><th>Check-in</th><th>Status</th><th>Check-out</th></tr></thead><tbody id="attendanceRows"></tbody></table></div>
+<div class="tableWrap"><table><thead><tr><th>Date</th><th>Student</th><th>Student ID</th><th>Assignment</th><th>Police Station</th><th>Check-in</th><th>Status</th><th>Check-out</th></tr></thead><tbody id="attendanceRows"></tbody></table></div>
 </div>
 </div>
 </div>
