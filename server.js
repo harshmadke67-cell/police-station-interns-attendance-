@@ -156,6 +156,15 @@ function getISTDate(now = new Date()) {
   }).format(now);
 }
 
+function isValidAttendanceDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day;
+}
+
 // Attendance Status: 10:00 AM – 11:00 AM IST is Present; After 11:00 AM is Late.
 // No 5 PM cutoff: accepted all day.
 function attendanceStatus(now = new Date()) {
@@ -687,7 +696,10 @@ const handleMarkAttendance = async (req, res) => {
       return res.status(403).json({ error: 'ACCESS DENIED: Only students can mark attendance' });
     }
 
-    const today = getISTDate();
+    const selectedDate = clean(req.query.attendance_date) || getISTDate();
+    if (!isValidAttendanceDate(selectedDate)) {
+      return res.status(400).json({ error: 'Invalid attendance date. Use YYYY-MM-DD.' });
+    }
 
     // 2. Validate token (must exist, be active, match today's IST date)
     const { data: qrRecord, error: qrErr } = await client
@@ -712,7 +724,7 @@ const handleMarkAttendance = async (req, res) => {
       .from('attendance')
       .select('id')
       .eq('student_id', req.user.id)
-      .eq('attendance_date', today)
+      .eq('attendance_date', selectedDate)
       .maybeSingle();
 
     if (existingAtt) {
@@ -995,7 +1007,10 @@ const handleOfficeAttendance = async (req, res) => {
     if (profileError || !profile) return res.status(403).json({ error: 'Office profile not found' });
     const assignment = await resolveOfficeAssignment(client, profile, req.query);
 
-    const today = getISTDate();
+    const selectedDate = clean(req.query.attendance_date) || getISTDate();
+    if (!isValidAttendanceDate(selectedDate)) {
+      return res.status(400).json({ error: 'Invalid attendance date. Use YYYY-MM-DD.' });
+    }
 
     // 1. Fetch unit & station names
     const [{ data: unit }, { data: station }] = await Promise.all([
@@ -1009,7 +1024,7 @@ const handleOfficeAttendance = async (req, res) => {
       .select('*')
       .eq('unit_id', assignment.unit_id)
       .eq('police_station_id', assignment.police_station_id)
-      .eq('attendance_date', today)
+      .eq('attendance_date', selectedDate)
       .order('check_in', { ascending: false });
 
     if (attErr) throw attErr;
@@ -1043,7 +1058,8 @@ const handleOfficeAttendance = async (req, res) => {
 
     res.json({
       records,
-      total_students: (students || []).length
+      total_students: (students || []).length,
+      attendance_date: selectedDate
     });
   } catch (error) {
     console.error('Office attendance monitor error:', error);
