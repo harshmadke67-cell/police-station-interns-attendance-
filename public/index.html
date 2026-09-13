@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StationTrack — Cybersecurity Internship Attendance</title>
+<link rel="stylesheet" href="/style.css"></head>
+<body>
+<div class="gridBg" aria-hidden="true"></div>
+<div class="pageBorderTrail" aria-hidden="true"></div>
+<div class="glowBg" aria-hidden="true"></div>
+<div class="sweep" aria-hidden="true"></div>
+
+<header>
+<div class="brand"><span class="brandMark">ST</span><div><b>StationTrack</b><small>CYBER INTERNSHIP ATTENDANCE</small></div></div>
+<div class="headRight">
+<span class="clock" id="clockLine"></span>
+<button id="menuToggle" class="ghost menuToggle hidden" type="button" aria-label="Open menu" onclick="toggleMenu()">Menu</button>
+<button id="logout" class="ghost hidden">Logout</button>
+</div>
+</header>
+<aside id="mobileMenu" class="mobileMenu hidden" aria-label="Application menu">
+<button class="menuClose ghost" type="button" onclick="toggleMenu()">Close</button>
+<div class="menuIdentity"><span class="brandMark">ST</span><div><strong id="menuUserName">StationTrack</strong><small>SECURE SESSION</small></div></div>
+<div class="menuSectionLabel">COMMAND MENU</div>
+<button class="menuAction" onclick="navigateStudent('studentDash')"><span>⌂</span>Dashboard</button>
+<button class="menuAction" onclick="navigateStudent('studentHistory')"><span>▤</span>Attendance History</button>
+<button class="menuAction" onclick="navigateStudent('studentProfile')"><span>◉</span>Profile</button>
+<button class="menuAction danger" onclick="logoutUser()"><span>↪</span>Logout</button>
+</aside>
+
+<main>
+
+<section id="home" class="screen">
+<div class="hero">
+<div class="kicker">SECURE ACCESS PORTAL</div>
+<h1 class="textRollTitle" aria-label="Verified presence. Real-time internship records."><span class="textRollLine" aria-hidden="true"><span data-text="Verified presence.">Verified presence.</span></span><br><span class="textRollLine" aria-hidden="true"><span data-text="Real-time internship records.">Real-time internship records.</span></span></h1>
+<div class="sub">CYBERSECURITY INTERNSHIP ATTENDANCE SYSTEM</div>
+<p>Secure attendance for the internship program. Every check-in is verified server-side against a token only the office control center can issue.</p>
+</div>
+<div class="portals">
+<button class="portal student" onclick="show('studentLogin')">
+<span class="cardSpotlight" aria-hidden="true"></span>
+<div class="pIcon">◆</div><div class="pTag">INTERN ACCESS</div>
+<h3>Student Portal</h3><p>Log in and scan today's office QR to mark attendance.</p>
+<div class="pGo">Continue →</div>
+</button>
+<button class="portal office" onclick="show('officeLogin')">
+<span class="cardSpotlight" aria-hidden="true"></span>
+<div class="pIcon">▣</div><div class="pTag">AUTHORIZED VERIFICATION ACCESS</div>
+<h3>Office Control Center</h3><p>Generate the day's verification QR and monitor live attendance.</p>
+<div class="pGo">Continue →</div>
+</button>
+</div>
+</section>
+
+<section id="studentLogin" class="screen hidden"><div class="formCard card">
+<button class="back" onclick="show('home')">← Back</button>
+<div class="formHead"><div class="kicker">STUDENT PORTAL</div><h2>Secure login</h2><p>Cybersecurity internship program</p></div>
+<form onsubmit="login(event,'student')">
+<label for="sident">Email</label><input id="sident" type="email" autocomplete="username" required>
+<label for="spass">Password</label><div class="passwordField"><input id="spass" type="password" autocomplete="current-password" required><button type="button" class="passwordToggle" onclick="togglePassword('spass',this)">Show</button></div>
+<label class="rememberField"><input id="studentRemember" type="checkbox"> <span>Remember me on this device</span></label>
+<button class="liquidMetalButton">Secure login</button>
+</form>
+<div class="secureNote"><span class="statusPill"><span class="dot on"></span>SYSTEM SECURE</span><span class="statusPill"><span class="dot on"></span>AUTHENTICATION READY</span></div>
+<p class="switch"><a onclick="forgotPassword()">Forgot password?</a></p>
+<p class="switch">New intern? <a onclick="show('register')">Register once</a></p>
+</div></section>
+
+<section id="register" class="screen hidden"><div class="formCard card" style="max-width:480px">
+<button class="back" onclick="show('studentLogin')">← Back</button>
+<div class="formHead"><div class="kicker">ONE-TIME REGISTRATION</div><h2>Create your account</h2><p>Your zone/unit is permanently locked after this step.</p></div>
+<form onsubmit="register(event)">
+<label for="rname">Full name</label><input id="rname" required>
+<label for="remail">Email</label><input id="remail" type="email" autocomplete="email" required>
+<label for="rpass">Password</label><input id="rpass" type="password" autocomplete="new-password" minlength="8" required>
+<label for="rconfirm">Confirm password</label><input id="rconfirm" type="password" autocomplete="new-password" minlength="8" required>
+<label for="runit">Zone / Unit</label><select id="runit" required><option value="">Select zone / unit</option></select>
+<button class="liquidMetalButton">Create account</button>
+</form>
+</div></section>
+
+<section id="officeLogin" class="screen hidden"><div class="formCard card">
+<button class="back" onclick="show('home')">← Back</button>
+<div class="formHead"><div class="kicker">OFFICE CONTROL CENTER</div><h2>Authorized access only</h2><p>Single verification account for the internship program.</p></div>
+<form onsubmit="login(event,'office')">
+<label for="oident">Email</label><input id="oident" autocomplete="username" required>
+<label for="opass">Password</label><input id="opass" type="password" autocomplete="current-password" required>
+<label class="rememberField"><input id="officeRemember" type="checkbox"> <span>Remember me on this device</span></label>
+<button class="liquidMetalButton">Secure sign in</button>
+</form>
+</div></section>
+
+<!-- ================= STUDENT DASHBOARD ================= -->
+<section id="studentDash" class="screen hidden">
+<div class="dashHead">
+<div><div class="kicker">POLICE CYBERSECURITY ATTENDANCE COMMAND CENTER</div><h2 id="sname"></h2><span class="lockChip">ASSIGNED UNIT — <span id="splace"></span></span></div>
+<div class="statusRow"><span class="statusPill"><span class="dot on"></span>SYSTEM ONLINE</span><span class="statusPill"><span class="dot on"></span>AUTHENTICATED</span></div>
+</div>
+<div class="studentWelcome card"><div><span class="kicker">WELCOME BACK</span><h3>Today's attendance at a glance</h3></div><div class="unitLine">IST — Asia/Kolkata · <span id="studentDate"></span></div></div>
+<div class="card verifyCard">
+<div class="vIcon">◆</div><div class="kicker">TODAY'S ATTENDANCE</div><h3 id="attendanceState">NOT MARKED</h3>
+<p>Scan the office's verification QR to mark today's attendance. It stays valid for the entire day.</p>
+<button class="liquidMetalButton" onclick="startScan()">Scan Attendance QR</button>
+<div class="recordBox" id="studentRecord">Loading…</div>
+</div>
+<div class="studentStats">
+<div class="statTile present"><b id="studentPresentCount">0</b><span>PRESENT</span></div>
+<div class="statTile late"><b id="studentLateCount">0</b><span>LATE</span></div>
+<div class="statTile"><b id="studentDaysCount">0</b><span>ATTENDANCE DAYS</span></div>
+<div class="statTile inside"><b id="studentCurrentStatus">—</b><span>CURRENT STATUS</span></div>
+</div>
+<div class="card policyCard"><div class="kicker">ATTENDANCE POLICY</div><div class="policyGrid"><span>10:00 AM – 11:00 AM<strong>PRESENT</strong></span><span>AFTER 11:00 AM<strong>LATE</strong></span><span>QR VALIDITY<strong>ENTIRE IST DAY</strong></span><span>NO 5 PM CUTOFF<strong>IST — ASIA/KOLKATA</strong></span></div></div>
+<div class="card"><div class="tableHead"><h3>Today's record</h3><button class="ghost" onclick="show('studentHistory');loadHistory()">View history</button></div></div>
+</section>
+
+<section id="studentHistory" class="screen hidden">
+<button class="back" onclick="show('studentDash')">← Back</button>
+<h2>Attendance history</h2><p class="unitLine">Read-only — past attendance cannot be edited.</p>
+<div class="card tableWrap"><table><thead><tr><th>Date</th><th>Check-in</th><th>Status</th><th>Check-out</th></tr></thead>
+<tbody id="historyRows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div>
+</section>
+
+<section id="studentProfile" class="screen hidden">
+<button class="back" onclick="navigateStudent('studentDash')">← Back</button>
+<div class="formHead"><div class="kicker">PROFILE</div><h2>Account details</h2><p>Your assigned unit is locked after registration.</p></div>
+<div class="profileGrid">
+<div class="card"><span class="kicker">FULL NAME</span><strong id="profileName">—</strong></div>
+<div class="card"><span class="kicker">EMAIL</span><strong id="profileEmail">—</strong></div>
+<div class="card"><span class="kicker">ASSIGNED UNIT</span><strong id="profileUnit">—</strong></div>
+</div>
+</section>
+
+<!-- ================= OFFICE COMMAND CENTER ================= -->
+<section id="officeDash" class="screen hidden">
+<div class="dashHead">
+<div><div class="kicker">CYBERSECURITY ATTENDANCE COMMAND CENTER</div><h2 id="oname">Office Control Center</h2>
+<div class="unitLine">Authorized unit: <b id="ounit"></b> <span id="ostation"></span></div></div>
+<div class="statusRow" id="statusRow">
+<span class="statusPill"><span class="dot" id="dotDb"></span>DATABASE</span>
+<span class="statusPill"><span class="dot" id="dotAtt"></span>ATTENDANCE SERVICE</span>
+<span class="statusPill"><span class="dot" id="dotQr"></span>QR VERIFICATION</span>
+</div>
+</div>
+
+<div class="grid2">
+<div class="card qrPanel">
+<h3>TODAY'S VERIFICATION QR</h3><div class="qrSub">Secure QR channel · verified today</div>
+<div class="qrFrame"><img id="qr" alt="Today's office verification QR"><div class="qrCorners"><span></span><span></span><span></span><span></span></div><div class="qrScanline"></div></div>
+<div class="qrMeta">
+<span class="valid" id="qrValidLabel">● VALID TODAY</span>
+<span class="dateLine" id="qrDateLine">—</span>
+</div>
+<div class="qrActions">
+<button class="liquidMetalButton" onclick="generateQR()">Generate Today's QR</button>
+<button class="ghost" onclick="regenerateQR()">Regenerate</button>
+<button class="ghost" onclick="showFullscreen()">Display fullscreen</button>
+</div>
+</div>
+
+<div>
+<div class="stats">
+<div class="statTile"><b id="totalRegistered">0</b><span>TOTAL STUDENTS</span></div>
+<div class="statTile present"><b id="presentCount">0</b><span>PRESENT</span></div>
+<div class="statTile late"><b id="lateCount">0</b><span>LATE</span></div>
+<div class="statTile inside"><b id="insideCount">0</b><span>CURRENTLY INSIDE</span></div>
+<div class="statTile out"><b id="outCount">0</b><span>CHECKED OUT</span></div>
+</div>
+<div class="card">
+<div class="tableHead"><h3>Live Attendance Monitor <span class="liveBadge"><span class="dot on pulse"></span>LIVE</span></h3><button class="ghost" onclick="refreshAttendance()">Refresh</button></div>
+<div class="filterBar">
+<div class="chips" role="group" aria-label="Filter by status">
+<button class="chip active" data-filter="all" onclick="setFilter('all')">All</button>
+<button class="chip" data-filter="present" onclick="setFilter('present')">Present</button>
+<button class="chip" data-filter="late" onclick="setFilter('late')">Late</button>
+<button class="chip" data-filter="inside" onclick="setFilter('inside')">Currently Inside</button>
+<button class="chip" data-filter="out" onclick="setFilter('out')">Checked Out</button>
+</div>
+<label for="searchInput" class="visually-hidden">Search student</label>
+<input id="searchInput" placeholder="Search name or student ID" oninput="renderAttendance()">
+</div>
+<div class="tableWrap"><table><thead><tr><th>Student</th><th>Student ID</th><th>Assignment</th><th>Police Station</th><th>Check-in</th><th>Status</th><th>Check-out</th></tr></thead><tbody id="attendanceRows"></tbody></table></div>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+
+<!-- ============ overlays ============ -->
+<div id="scanOverlay" class="scanOverlay hidden">
+<div class="kicker">SCAN THE OFFICE QR</div>
+<div class="scanFrame"><div id="reader"></div><div class="qrCorners"><span></span><span></span><span></span><span></span></div></div>
+<div class="scanStatus" id="scanStatus">Point your camera at the office's QR code</div>
+<button class="ghost scanClose" onclick="stopScan()">Cancel</button>
+</div>
+
+<div id="resultOverlay" class="resultOverlay hidden">
+<div class="resultCard" id="resultCard"></div>
+</div>
+
+<div id="fsQr" class="fsQr hidden">
+<button class="ghost" onclick="hideFullscreen()">Close</button>
+<img id="fsQrImg" alt="Office verification QR — fullscreen">
+<div class="fsLabel" id="fsQrLabel">TODAY'S VERIFICATION QR — VALID UNTIL 11:59 PM</div>
+</div>
+
+<div id="toast"></div>
+<nav id="mobileNav" class="mobileNav hidden" aria-label="Mobile navigation">
+<div class="stationDock">
+<button class="dockItem" aria-label="Home" data-label="Home" onclick="navigateStudent('studentDash')"><span class="dockIcon">⌂</span><span class="dockTooltip">Home</span></button>
+<button class="dockItem" aria-label="Attendance history" data-label="History" onclick="navigateStudent('studentHistory')"><span class="dockIcon">▤</span><span class="dockTooltip">History</span></button>
+<span class="dockSeparator" aria-hidden="true"></span>
+<button class="dockItem" aria-label="Profile" data-label="Profile" onclick="navigateStudent('studentProfile')"><span class="dockIcon">◉</span><span class="dockTooltip">Profile</span></button>
+</div>
+</nav>
+<script src="https://unpkg.com/html5-qrcode" defer></script>
+<script src="/app.js"></script>
+</body></html>
