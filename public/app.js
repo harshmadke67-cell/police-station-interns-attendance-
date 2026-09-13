@@ -825,51 +825,51 @@ function renderAttendance() {
       </tr>
     `).join('') : '<tr><td colspan="7">No matching attendance records.</td></tr>';
   }
+}
 
-  async function showOfficeStudents() {
-    closeMenu();
-    show('officeStudents');
+async function showOfficeStudents() {
+  closeMenu();
+  show('officeStudents');
+  await loadOfficeStudents();
+}
+
+async function loadOfficeStudents() {
+  try {
+    const params = new URLSearchParams({
+      unit_id: currentUser?.unit_id || '',
+      station_id: currentUser?.police_station_id || ''
+    });
+    const d = await api(`/api/office/students?${params}`);
+    const label = $('studentManageAssignment');
+    if (label) label.textContent = `${currentUser?.unit_name || 'selected unit'} · ${currentUser?.station_name || 'selected station'}`;
+    const rows = $('officeStudentsRows');
+    if (!rows) return;
+    rows.innerHTML = d.students.length ? d.students.map(student => `
+      <tr>
+        <td>${escapeHtml(student.full_name)}</td>
+        <td>${escapeHtml(student.email || '—')}</td>
+        <td>${student.created_at ? new Date(student.created_at).toLocaleDateString() : '—'}</td>
+        <td><button class="dangerButton" onclick="removeOfficeStudent('${escapeHtml(student.auth_user_id)}')">Remove permanently</button></td>
+      </tr>
+    `).join('') : '<tr><td colspan="4">No registered students in this assignment.</td></tr>';
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+async function removeOfficeStudent(studentId) {
+  if (!window.confirm('Permanently remove this student? Their login and attendance history will be deleted.')) return;
+  try {
+    const params = new URLSearchParams({
+      unit_id: currentUser?.unit_id || '',
+      station_id: currentUser?.police_station_id || ''
+    });
+    await api(`/api/office/students/${encodeURIComponent(studentId)}?${params}`, { method: 'DELETE' });
+    toast('Student was permanently removed.');
     await loadOfficeStudents();
-  }
-
-  async function loadOfficeStudents() {
-    try {
-      const params = new URLSearchParams({
-        unit_id: currentUser?.unit_id || '',
-        station_id: currentUser?.police_station_id || ''
-      });
-      const d = await api(`/api/office/students?${params}`);
-      const label = $('studentManageAssignment');
-      if (label) label.textContent = `${currentUser?.unit_name || 'selected unit'} · ${currentUser?.station_name || 'selected station'}`;
-      const rows = $('officeStudentsRows');
-      if (!rows) return;
-      rows.innerHTML = d.students.length ? d.students.map(student => `
-        <tr>
-          <td>${escapeHtml(student.full_name)}</td>
-          <td>${escapeHtml(student.email || '—')}</td>
-          <td>${student.created_at ? new Date(student.created_at).toLocaleDateString() : '—'}</td>
-          <td><button class="dangerButton" onclick="removeOfficeStudent('${escapeHtml(student.auth_user_id)}')">Remove permanently</button></td>
-        </tr>
-      `).join('') : '<tr><td colspan="4">No registered students in this assignment.</td></tr>';
-    } catch (e) {
-      toast(e.message);
-    }
-  }
-
-  async function removeOfficeStudent(studentId) {
-    if (!window.confirm('Permanently remove this student? Their login and attendance history will be deleted.')) return;
-    try {
-      const params = new URLSearchParams({
-        unit_id: currentUser?.unit_id || '',
-        station_id: currentUser?.police_station_id || ''
-      });
-      await api(`/api/office/students/${encodeURIComponent(studentId)}?${params}`, { method: 'DELETE' });
-      toast('Student was permanently removed.');
-      await loadOfficeStudents();
-      await refreshAttendance();
-    } catch (e) {
-      toast(e.message);
-    }
+    await refreshAttendance();
+  } catch (e) {
+    toast(e.message);
   }
 }
 
