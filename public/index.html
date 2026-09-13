@@ -23,6 +23,7 @@
 <button class="menuAction" onclick="navigateStudent('studentDash')"><span>⌂</span>Dashboard</button>
 <button class="menuAction" onclick="navigateStudent('studentHistory')"><span>▤</span>Attendance History</button>
 <button class="menuAction" onclick="navigateStudent('studentProfile')"><span>◉</span>Profile</button>
+<button id="officeStudentsMenu" class="menuAction hidden" onclick="showOfficeStudents()"><span>♙</span>Manage students</button>
 <button class="menuAction danger" onclick="logoutUser()"><span>↪</span>Logout</button>
 </aside>
 
@@ -174,6 +175,7 @@
 <div class="statTile late"><b id="lateCount">0</b><span>LATE</span></div>
 <div class="statTile inside"><b id="insideCount">0</b><span>CURRENTLY INSIDE</span></div>
 <div class="statTile out"><b id="outCount">0</b><span>CHECKED OUT</span></div>
+<div class="statTile absent"><b id="absentCount">0</b><span>ABSENT</span></div>
 </div>
 <div class="card">
 <div class="tableHead"><h3>Live Attendance Monitor <span class="liveBadge"><span class="dot on pulse"></span>LIVE</span></h3><button class="ghost" onclick="refreshAttendance()">Refresh</button></div>
@@ -184,6 +186,7 @@
 <button class="chip" data-filter="late" onclick="setFilter('late')">Late</button>
 <button class="chip" data-filter="inside" onclick="setFilter('inside')">Currently Inside</button>
 <button class="chip" data-filter="out" onclick="setFilter('out')">Checked Out</button>
+<button class="chip" data-filter="absent" onclick="setFilter('absent')">Absent</button>
 </div>
 <label for="searchInput" class="visually-hidden">Search student</label>
 <input id="searchInput" placeholder="Search by student name" oninput="renderAttendance()">
@@ -192,7 +195,20 @@
 </div>
 <div class="tableWrap"><table><thead><tr><th>Date</th><th>Student</th><th>Assignment</th><th>Police Station</th><th>Check-in</th><th>Status</th><th>Check-out</th></tr></thead><tbody id="attendanceRows"></tbody></table></div>
 </div>
+<button class="ghost manageStudentsButton" onclick="showOfficeStudents()">Manage registered students</button>
 </div>
+</div>
+</section>
+
+<section id="officeStudents" class="screen hidden">
+<div class="dashHead">
+<div><div class="kicker">OFFICE ADMINISTRATION</div><h2>Registered students</h2><div class="unitLine">Permanently remove students assigned to <b id="studentManageAssignment">your station</b>.</div></div>
+<button class="ghost" onclick="show('officeDash')">Back to monitor</button>
+</div>
+<div class="card dangerNotice"><strong>Permanent removal</strong><p>This deletes the student's login, profile, attendance history, and QR-related records. This action cannot be undone.</p></div>
+<div class="card">
+<div class="tableHead"><h3>Students in this assignment</h3><button class="ghost" onclick="loadOfficeStudents()">Refresh</button></div>
+<div class="tableWrap"><table><thead><tr><th>Student</th><th>Email</th><th>Registered</th><th>Action</th></tr></thead><tbody id="officeStudentsRows"></tbody></table></div>
 </div>
 </section>
 
