@@ -1012,15 +1012,18 @@ app.use((err, req, res, next) => {
 // ============================================================
 // START SERVER
 // ============================================================
-const server = app.listen(PORT, async () => {
-  console.log('\n=====================================================================');
-  console.log('✓ STATIONTRACK — CYBERSECURITY INTERNSHIP ATTENDANCE COMMAND CENTER');
-  console.log(`✓ Server running at: http://localhost:${PORT}`);
-  console.log(`✓ Supabase Endpoint: ${SUPABASE_URL}`);
-  console.log('✓ Timezone Engine   : Asia/Kolkata (IST)');
-  console.log('=====================================================================\n');
+let server = null;
+if (!process.env.VERCEL) {
+  server = app.listen(PORT, async () => {
+    console.log('\n=====================================================================');
+    console.log('✓ STATIONTRACK — CYBERSECURITY INTERNSHIP ATTENDANCE COMMAND CENTER');
+    console.log(`✓ Server running at: http://localhost:${PORT}`);
+    console.log(`✓ Supabase Endpoint: ${SUPABASE_URL}`);
+    console.log('✓ Timezone Engine   : Asia/Kolkata (IST)');
+    console.log('=====================================================================\n');
 
-  await ensureOfficeAccount();
-});
+    await ensureOfficeAccount();
+  });
+}
 
 module.exports = { app, server };
