@@ -696,10 +696,7 @@ const handleMarkAttendance = async (req, res) => {
       return res.status(403).json({ error: 'ACCESS DENIED: Only students can mark attendance' });
     }
 
-    const selectedDate = clean(req.query.attendance_date) || getISTDate();
-    if (!isValidAttendanceDate(selectedDate)) {
-      return res.status(400).json({ error: 'Invalid attendance date. Use YYYY-MM-DD.' });
-    }
+    const today = getISTDate();
 
     // 2. Validate token (must exist, be active, match today's IST date)
     const { data: qrRecord, error: qrErr } = await client
@@ -724,7 +721,7 @@ const handleMarkAttendance = async (req, res) => {
       .from('attendance')
       .select('id')
       .eq('student_id', req.user.id)
-      .eq('attendance_date', selectedDate)
+      .eq('attendance_date', today)
       .maybeSingle();
 
     if (existingAtt) {
