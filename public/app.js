@@ -754,10 +754,16 @@ function hideFullscreen() {
 
 async function refreshAttendance() {
   try {
+    const attendanceDate = $('attendanceDate');
+    const currentDate = getClientISTDate();
+    if (attendanceDate && (!attendanceDate.value || attendanceDate.dataset.autoDate === attendanceDate.value)) {
+      attendanceDate.value = currentDate;
+      attendanceDate.dataset.autoDate = currentDate;
+    }
     const params = new URLSearchParams({
       unit_id: currentUser?.unit_id || '',
       station_id: currentUser?.police_station_id || '',
-      attendance_date: $('attendanceDate')?.value || getClientISTDate()
+      attendance_date: attendanceDate?.value || currentDate
     });
     const d = await api(`/api/office/attendance?${params}`);
     officeRows = d.records;
@@ -879,7 +885,10 @@ async function removeOfficeStudent(studentId) {
 document.addEventListener('DOMContentLoaded', initAuth);
 window.onload = () => {
   const attendanceDate = $('attendanceDate');
-  if (attendanceDate) attendanceDate.value = getClientISTDate();
+  if (attendanceDate) {
+    attendanceDate.value = getClientISTDate();
+    attendanceDate.dataset.autoDate = attendanceDate.value;
+  }
   loadUnits().catch(console.error);
 };
 
