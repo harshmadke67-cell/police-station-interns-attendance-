@@ -101,7 +101,7 @@ async function forgotPassword() {
 }
 
 function toggleMenu() {
-  if (!currentUser) return;
+  if (!currentUser || $('menuToggle')?.classList.contains('hidden')) return;
   $('mobileMenu')?.classList.toggle('hidden');
 }
 
@@ -110,11 +110,15 @@ function closeMenu() {
 }
 
 function setAuthenticatedChrome(authenticated) {
+  closeMenu();
   $('logout')?.classList.toggle('hidden', !authenticated);
   $('menuToggle')?.classList.toggle('hidden', !authenticated);
   $('mobileMenu')?.classList.toggle('hidden', !authenticated);
   $('mobileNav')?.classList.toggle('hidden', !authenticated || currentUser?.role !== 'student');
   $('officeStudentsMenu')?.classList.toggle('hidden', !authenticated || currentUser?.role !== 'office');
+  document.querySelectorAll('.studentMenuItem').forEach(item => {
+    item.classList.toggle('hidden', !authenticated || currentUser?.role !== 'student');
+  });
 }
 
 function navigateStudent(screenId) {
@@ -322,6 +326,18 @@ const LOGIN_FIELDS = {
 };
 
 let availableAssignments = [];
+let loginInProgress = false;
+
+function setLoginLoading(loading, message = 'Signing you in…') {
+  const overlay = $('loadingOverlay');
+  const text = $('loadingText');
+  if (text) text.textContent = message;
+  overlay?.classList.toggle('hidden', !loading);
+  document.querySelectorAll('.loginButton').forEach(button => {
+    button.disabled = loading;
+    button.classList.toggle('isLoading', loading);
+  });
+}
 
 function populateOfficeStations() {
   const unitSelect = $('officeUnit');
@@ -347,6 +363,9 @@ function setupOfficeAssignmentFields(units) {
 
 async function login(e, role) {
   e.preventDefault();
+  if (loginInProgress) return;
+  loginInProgress = true;
+  setLoginLoading(true, role === 'office' ? 'Opening office control center…' : 'Opening student portal…');
   try {
     const fields = LOGIN_FIELDS[role];
     if (!fields) return;
@@ -402,6 +421,9 @@ async function login(e, role) {
     }
   } catch (e) {
     toast(e.message);
+  } finally {
+    loginInProgress = false;
+    setLoginLoading(false);
   }
 }
 
