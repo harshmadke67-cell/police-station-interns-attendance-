@@ -111,6 +111,8 @@ main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 24px}
 .portal.office .pIcon{background:var(--cyan-deep);color:var(--cyan)}
 .portal .pTag{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:var(--ink-dim);margin-bottom:6px}
 .portal h3{margin:0 0 6px;font-size:19px}
+.portalTitle{display:inline-block;color:var(--ink);font-weight:700;text-shadow:0 0 18px rgba(74,222,128,.16)}
+.portal.office .portalTitle{color:#b9f5fb;text-shadow:0 0 18px rgba(53,209,224,.2)}
 .portal p{margin:0;color:var(--ink-dim);font-size:13px}
 .portal .pGo{margin-top:16px;font-family:var(--font-mono);font-size:12px;color:var(--green-bright)}
 .adminLink{text-align:center;margin-top:26px;font-size:12px;color:var(--ink-faint)}
@@ -234,6 +236,15 @@ button.ghost{background:transparent;color:var(--ink-dim);border:1px solid var(--
 button.ghost:hover{color:var(--ink);border-color:var(--line-bright)}
 button.danger{background:var(--red-deep);color:var(--red)}
 button:disabled{opacity:.55;cursor:not-allowed}
+.loginButton{position:relative;min-height:44px}
+.loginButton.isLoading .buttonLabel{opacity:.55}
+.buttonLoader{display:none;position:absolute;width:16px;height:16px;left:50%;top:50%;margin:-8px;border:2px solid rgba(4,20,10,.3);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite}
+.loginButton.isLoading .buttonLoader{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loadingOverlay{position:fixed;inset:0;z-index:200;display:grid;place-items:center;align-content:center;gap:14px;background:rgba(6,9,7,.72);backdrop-filter:blur(5px);color:var(--ink);font-size:14px}
+.loadingSpinner{width:30px;height:30px;border:3px solid var(--line-bright);border-top-color:var(--green-bright);border-radius:50%;animation:spin .75s linear infinite}
+.studentMenuItem.hidden{display:none!important}
+@media(prefers-reduced-motion:reduce){.buttonLoader,.loadingSpinner{animation:none}}
 form button[type=submit],form>button:last-child{margin-top:18px}
 .passwordField{position:relative}
 .passwordField input{padding-right:68px}
