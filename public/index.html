@@ -20,9 +20,9 @@
 <button class="menuClose ghost" type="button" onclick="toggleMenu()">Close</button>
 <div class="menuIdentity"><span class="brandMark">ST</span><div><strong id="menuUserName">StationTrack</strong><small>SECURE SESSION</small></div></div>
 <div class="menuSectionLabel">COMMAND MENU</div>
-<button class="menuAction" onclick="navigateStudent('studentDash')"><span>⌂</span>Dashboard</button>
-<button class="menuAction" onclick="navigateStudent('studentHistory')"><span>▤</span>Attendance History</button>
-<button class="menuAction" onclick="navigateStudent('studentProfile')"><span>◉</span>Profile</button>
+<button class="menuAction studentMenuItem" onclick="navigateStudent('studentDash')"><span>⌂</span>Dashboard</button>
+<button class="menuAction studentMenuItem" onclick="navigateStudent('studentHistory')"><span>▤</span>Attendance History</button>
+<button class="menuAction studentMenuItem" onclick="navigateStudent('studentProfile')"><span>◉</span>Profile</button>
 <button id="officeStudentsMenu" class="menuAction hidden" onclick="showOfficeStudents()"><span>♙</span>Manage students</button>
 <button class="menuAction danger" onclick="logoutUser()"><span>↪</span>Logout</button>
 </aside>
@@ -40,13 +40,13 @@
 <button class="portal student" onclick="show('studentLogin')">
 <span class="cardSpotlight" aria-hidden="true"></span>
 <div class="pIcon">◆</div><div class="pTag">INTERN ACCESS</div>
-<h3>Student Portal</h3><p>Log in and scan today's office QR to mark attendance.</p>
+<h3><span class="portalTitle">Student Portal</span></h3><p>Log in and scan today's office QR to mark attendance.</p>
 <div class="pGo">Continue →</div>
 </button>
 <button class="portal office" onclick="show('officeLogin')">
 <span class="cardSpotlight" aria-hidden="true"></span>
 <div class="pIcon">▣</div><div class="pTag">AUTHORIZED VERIFICATION ACCESS</div>
-<h3>Office Control Center</h3><p>Generate the day's verification QR and monitor live attendance.</p>
+<h3><span class="portalTitle">Office Control Center</span></h3><p>Generate the day's verification QR and monitor live attendance.</p>
 <div class="pGo">Continue →</div>
 </button>
 </div>
@@ -59,7 +59,7 @@
 <label for="sident">Email</label><input id="sident" type="email" autocomplete="username" required>
 <label for="spass">Password</label><div class="passwordField"><input id="spass" type="password" autocomplete="current-password" required><button type="button" class="passwordToggle" onclick="togglePassword('spass',this)">Show</button></div>
 <label class="rememberField"><input id="studentRemember" type="checkbox"> <span>Remember me on this device</span></label>
-<button class="liquidMetalButton">Secure login</button>
+<button class="liquidMetalButton loginButton" type="submit"><span class="buttonLabel">Secure login</span><span class="buttonLoader" aria-hidden="true"></span></button>
 </form>
 <div class="secureNote"><span class="statusPill"><span class="dot on"></span>SYSTEM SECURE</span><span class="statusPill"><span class="dot on"></span>AUTHENTICATION READY</span></div>
 <p class="switch"><a onclick="forgotPassword()">Forgot password?</a></p>
@@ -88,7 +88,7 @@
 <label for="officeUnit">Zone / Unit</label><select id="officeUnit" required><option value="">Select zone / unit</option></select>
 <label for="officeStation">Police station</label><select id="officeStation" required disabled><option value="">Select police station</option></select>
 <label class="rememberField"><input id="officeRemember" type="checkbox"> <span>Remember me on this device</span></label>
-<button class="liquidMetalButton">Secure sign in</button>
+<button class="liquidMetalButton loginButton" type="submit"><span class="buttonLabel">Secure sign in</span><span class="buttonLoader" aria-hidden="true"></span></button>
 </form>
 </div></section>
 
@@ -233,6 +233,9 @@
 </div>
 
 <div id="toast"></div>
+<div id="loadingOverlay" class="loadingOverlay hidden" role="status" aria-live="polite">
+<div class="loadingSpinner" aria-hidden="true"></div><span id="loadingText">Signing you in…</span>
+</div>
 <nav id="mobileNav" class="mobileNav hidden" aria-label="Mobile navigation">
 <div class="stationDock">
 <button class="dockItem" aria-label="Home" data-label="Home" onclick="navigateStudent('studentDash')"><span class="dockIcon">⌂</span><span class="dockTooltip">Home</span></button>
