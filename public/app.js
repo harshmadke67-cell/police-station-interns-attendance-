@@ -275,9 +275,35 @@ async function loadUnits() {
       unitSelect.innerHTML = '<option value="">Select zone / unit</option>' + unique.map(x => 
         `<option value="${x.unit_id}">${escapeHtml(x.unit_name)}</option>`
       ).join('');
+      unitSelect.onchange = populateCyberInternGroups;
+      populateCyberInternGroups();
     }
   } catch (e) {
     toast(e.message);
+  }
+}
+
+function populateCyberInternGroups() {
+  const unitSelect = $('runit');
+  const groupField = $('cyberInternGroupField');
+  const groupSelect = $('rstation');
+  if (!unitSelect || !groupField || !groupSelect) return;
+
+  const selectedUnit = availableAssignments.find(x => x.unit_id === unitSelect.value)?.unit_name;
+  const isCyberPS = selectedUnit === 'Cyber PS';
+  groupField.classList.toggle('hidden', !isCyberPS);
+  groupSelect.required = isCyberPS;
+
+  const groups = availableAssignments.filter(x =>
+    x.unit_id === unitSelect.value &&
+    ['South Interns', 'North Interns'].includes(x.station_name)
+  );
+  groupSelect.innerHTML = '<option value="">Select South or North interns</option>' +
+    groups.map(group => `<option value="${group.station_id}">${escapeHtml(group.station_name)}</option>`).join('');
+  groupSelect.disabled = !isCyberPS || groups.length !== 2;
+
+  if (isCyberPS && groups.length !== 2) {
+    toast('Cyber PS intern group options are not configured. Please contact the office.');
   }
 }
 
@@ -289,6 +315,7 @@ async function register(e) {
     const rpass = $('rpass');
     const rconfirm = $('rconfirm');
     const runit = $('runit');
+    const rstation = $('rstation');
 
     if (!rname || !remail || !rpass || !rconfirm || !runit) return;
     if (rpass.value !== rconfirm.value) {
@@ -303,7 +330,8 @@ async function register(e) {
         full_name: rname.value.trim(),
         email: remail.value.trim(),
         password: rpass.value,
-        unit_id: runit.value
+        unit_id: runit.value,
+        ...(rstation?.required ? { station_id: rstation.value } : {})
       })
     });
 
@@ -315,6 +343,10 @@ async function register(e) {
     remail.value = '';
     rpass.value = '';
     rconfirm.value = '';
+    if (rstation) {
+      rstation.value = '';
+      populateCyberInternGroups();
+    }
   } catch (e) {
     toast(e.message);
   }
@@ -439,7 +471,9 @@ async function loadStudent() {
     const splace = $('splace');
     
     if (sname) sname.textContent = `Welcome, ${m.user.name}`;
-    if (splace) splace.textContent = m.user.unit_name;
+    if (splace) splace.textContent = m.user.unit_name === 'Cyber PS' && m.user.station_name
+      ? `${m.user.unit_name} · ${m.user.station_name}`
+      : m.user.unit_name;
     $('menuUserName').textContent = m.user.name;
     $('profileName').textContent = m.user.name;
     $('profileEmail').textContent = m.user.email;
