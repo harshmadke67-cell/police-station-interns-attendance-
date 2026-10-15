@@ -40,14 +40,15 @@ const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPA
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const PORT = process.env.PORT || 3000;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const OFFICE_EMAIL = process.env.OFFICE_EMAIL || (IS_PRODUCTION ? '' : 'office@stationtrack.local');
-const OFFICE_PASSWORD = process.env.OFFICE_PASSWORD || (IS_PRODUCTION ? '' : 'office123');
+const OFFICE_EMAIL = process.env.OFFICE_EMAIL || '';
+const OFFICE_USERNAME = process.env.OFFICE_USERNAME || '';
+const OFFICE_PASSWORD = process.env.OFFICE_PASSWORD || '';
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   console.warn('⚠️ WARNING: Supabase URL or Anon Key missing in environment. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env');
 }
-if (IS_PRODUCTION && (!SUPABASE_SERVICE_KEY || !OFFICE_EMAIL || !OFFICE_PASSWORD)) {
-  console.warn('⚠️ WARNING: Production requires SUPABASE_SERVICE_ROLE_KEY, OFFICE_EMAIL, and OFFICE_PASSWORD.');
+if (IS_PRODUCTION && (!SUPABASE_SERVICE_KEY || !OFFICE_USERNAME || !OFFICE_PASSWORD)) {
+  console.warn('⚠️ WARNING: Production requires SUPABASE_SERVICE_ROLE_KEY, OFFICE_USERNAME, and OFFICE_PASSWORD.');
 }
 
 // ============================================================
@@ -75,12 +76,13 @@ function getConfigurationStatus() {
     supabase_anon_key_configured: Boolean(SUPABASE_ANON_KEY),
     supabase_service_key_configured: Boolean(SUPABASE_SERVICE_KEY),
     office_email_configured: Boolean(OFFICE_EMAIL),
+    office_username_configured: Boolean(OFFICE_USERNAME),
     office_password_configured: Boolean(OFFICE_PASSWORD),
     production_ready: Boolean(
       SUPABASE_URL &&
       SUPABASE_ANON_KEY &&
       SUPABASE_SERVICE_KEY &&
-      OFFICE_EMAIL &&
+      OFFICE_USERNAME &&
       OFFICE_PASSWORD
     )
   };
@@ -479,7 +481,7 @@ app.post('/api/register', handleRegister);
 const handleLogin = async (req, res) => {
   try {
     let { email, password, role } = req.body;
-    role = role || (req.body.username === 'office' ? OFFICE_ROLE : STUDENT_ROLE);
+    role = role || STUDENT_ROLE;
 
     if (!email && req.body.username) {
       email = req.body.username;
@@ -493,9 +495,38 @@ const handleLogin = async (req, res) => {
     }
 
     email = clean(email);
-    password = clean(password); if (role === OFFICE_ROLE && password === OFFICE_PASSWORD && (email.toLowerCase() === 'office' || email.toLowerCase() === OFFICE_EMAIL.toLowerCase())) await ensureOfficeAccount();
-
+    password = clean(password);
     const client = dbAdmin();
+    if (role === OFFICE_ROLE) {
+      if (!OFFICE_USERNAME || email.toLowerCase() !== OFFICE_USERNAME.toLowerCase() || password !== OFFICE_PASSWORD) {
+        return res.status(401).json({ error: 'AUTHENTICATION FAILED: Check your credentials and try again.' });
+      }
+
+      const { data: officeProfile, error: officeProfileError } = await client
+        .from('profiles')
+        .select('email, auth_user_id')
+        .eq('role', OFFICE_ROLE)
+        .maybeSingle();
+
+      if (officeProfileError) {
+        console.error('Office profile lookup failed:', officeProfileError.message);
+        return res.status(500).json({ error: 'Office account could not be verified.' });
+      }
+      if (!officeProfile?.email || !officeProfile.auth_user_id || !supabaseAdmin) {
+        return res.status(503).json({ error: 'Office account is not configured.' });
+      }
+
+      const { error: passwordUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
+        officeProfile.auth_user_id,
+        { password }
+      );
+      if (passwordUpdateError) {
+        console.error('Office credential synchronization failed:', passwordUpdateError.message);
+        return res.status(500).json({ error: 'Office account could not be verified.' });
+      }
+
+      email = officeProfile.email;
+    }
 
     // If identifier is not an email (e.g. Student ID or username), resolve it via profiles
     if (!isValidEmail(email)) {
@@ -507,8 +538,6 @@ const handleLogin = async (req, res) => {
 
       if (foundProfile && foundProfile.email) {
         email = foundProfile.email;
-      } else if (email.toLowerCase() === 'office') {
-        email = OFFICE_EMAIL;
       } else {
         return res.status(401).json({ error: 'AUTHENTICATION FAILED: Check your credentials and try again.' });
       }

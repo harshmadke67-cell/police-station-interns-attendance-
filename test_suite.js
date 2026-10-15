@@ -170,23 +170,46 @@ async function runTests() {
   // 5. OFFICE AUTHENTICATION (Single Authorized Account)
   // -------------------------------------------------------------
   console.log('\n[SECTION 5: OFFICE CONTROL CENTER AUTHENTICATION]');
-  const officeEmail = process.env.OFFICE_EMAIL || 'office@stationtrack.local';
-  const officePass = process.env.OFFICE_PASSWORD || 'office123';
+  const officeUsername = process.env.OFFICE_USERNAME;
+  const officePass = process.env.OFFICE_PASSWORD;
+  if (!officeUsername || !officePass) {
+    throw new Error('OFFICE_USERNAME and OFFICE_PASSWORD are required for office authentication tests.');
+  }
 
   const officeLogin = await api('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({
-      email: officeEmail,
+      email: officeUsername,
       password: officePass,
       role: 'office'
     })
   });
   assert('Single Office account signs in successfully', officeLogin.status === 200, JSON.stringify(officeLogin.data));
 
+  const legacyOfficeLogin = await api('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: 'office',
+      password: officePass,
+      role: 'office'
+    })
+  });
+  assert('Legacy office alias is rejected', legacyOfficeLogin.status === 401);
+
   const officeToken = officeLogin.data.access_token;
   const officeUser = officeLogin.data.user;
   assert('Office account has role="office"', officeUser?.role === 'office');
   assert('Office account is assigned to DCP Zone 3', Boolean(officeUser?.unit_id));
+
+  const officeEmailLogin = await api('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: officeUser.email,
+      password: officePass,
+      role: 'office'
+    })
+  });
+  assert('Supabase Auth email is not accepted as the office login ID', officeEmailLogin.status === 401);
 
   // -------------------------------------------------------------
   // 6. ROLE-BASED ACCESS CONTROL (RBAC) & ENDPOINT SECURITY

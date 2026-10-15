@@ -183,9 +183,11 @@ SUPABASE_SERVICE_ROLE_KEY=xxxxx
 PORT=3000
 NODE_ENV=development
 
-# Office account setup
-OFFICE_EMAIL=office@stationtrack.local
-OFFICE_PASSWORD=change_me_in_production
+# Office account login and initial provisioning
+OFFICE_USERNAME=your_office_id
+OFFICE_PASSWORD=your_secure_password
+# Only needed when initially provisioning the Supabase office profile
+OFFICE_EMAIL=office@yourdomain.example
 ```
 
 **IMPORTANT:** Never commit `.env` to git. It's in `.gitignore`.
@@ -199,8 +201,9 @@ OFFICE_PASSWORD=change_me_in_production
 | `SUPABASE_SERVICE_ROLE_KEY` | Backend privileged access | Required for some operations |
 | `PORT` | HTTP server port | 3000 |
 | `NODE_ENV` | Environment (development/production) | development |
-| `OFFICE_EMAIL` | Office account email | office@stationtrack.local |
+| `OFFICE_USERNAME` | The only accepted office login ID | (set in .env) |
 | `OFFICE_PASSWORD` | Office account password | (set in .env) |
+| `OFFICE_EMAIL` | Supabase Auth email used for initial account provisioning | (optional) |
 
 ## 🧪 Testing
 
@@ -224,7 +227,7 @@ Password: TestPass123!
 ### Test Office
 ```bash
 # Go to Office Control Center
-Email: office@stationtrack.local
+Office ID: (from your environment configuration)
 Password: (from your .env)
 ```
 
@@ -294,6 +297,8 @@ If you had an older version using SQLite:
 - **Supabase Auth:** https://supabase.com/docs/guides/auth
 
 ## 💼 Production Deployment
+**Hosting:** This Express application is deployed on Vercel. Netlify Git-based deploys are disabled for this repository; do not treat the app as a static `dist` site because its API requires the Express runtime.
+
 
 ### Before Going Live
 

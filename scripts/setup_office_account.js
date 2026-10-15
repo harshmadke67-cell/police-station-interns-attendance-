@@ -15,8 +15,8 @@ const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const OFFICE_EMAIL = process.env.OFFICE_EMAIL || 'office@stationtrack.local';
-const OFFICE_PASSWORD = process.env.OFFICE_PASSWORD || 'office123';
+const OFFICE_EMAIL = process.env.OFFICE_EMAIL || '';
+const OFFICE_PASSWORD = process.env.OFFICE_PASSWORD || '';
 const ASSIGNED_UNIT = process.env.OFFICE_UNIT || 'DCP Zone 3';
 
 async function setupOfficeAccount() {
@@ -27,6 +27,10 @@ async function setupOfficeAccount() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || SUPABASE_URL.includes('your-project') || SUPABASE_URL.includes('PLACEHOLDER')) {
     console.error('❌ ERROR: Supabase credentials not configured in .env');
     console.error('Please configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env before running this script.');
+    process.exit(1);
+  }
+  if (!OFFICE_EMAIL || !OFFICE_PASSWORD) {
+    console.error('❌ ERROR: OFFICE_EMAIL and OFFICE_PASSWORD must be set before running this script.');
     process.exit(1);
   }
 
@@ -132,7 +136,6 @@ async function setupOfficeAccount() {
   console.log('=====================================================================');
   console.log(`  Role            : office`);
   console.log(`  Email           : ${OFFICE_EMAIL}`);
-  console.log(`  Password        : ${OFFICE_PASSWORD}`);
   console.log(`  Assigned Unit   : ${unit.name} (${unit.id})`);
   console.log(`  Assigned Station: ${station.name} (${station.id})`);
   console.log('=====================================================================\n');
