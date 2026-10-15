@@ -297,6 +297,8 @@ If you had an older version using SQLite:
 - **Supabase Auth:** https://supabase.com/docs/guides/auth
 
 ## 💼 Production Deployment
+**Hosting:** This Express application is deployed on Vercel. Netlify Git-based deploys are disabled for this repository; do not treat the app as a static `dist` site because its API requires the Express runtime.
+
 
 ### Before Going Live
 
