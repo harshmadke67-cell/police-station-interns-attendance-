@@ -31,6 +31,7 @@ const HISTORY_LIMIT = 60; // Max days of history returned
 const OFFICE_ROLE = 'office';
 const STUDENT_ROLE = 'student';
 const DEFAULT_OFFICE_UNIT = 'DCP Zone 3';
+const CYBER_INTERN_GROUPS = ['South Interns', 'North Interns'];
 
 // ============================================================
 // ENVIRONMENT & CREDENTIALS
@@ -322,6 +323,9 @@ async function resolveOfficeAssignment(client, profile, input = {}) {
   if (!unit || !station) {
     throw new Error('Invalid office zone/unit or police station');
   }
+  if (unit.name === 'Cyber PS' && !CYBER_INTERN_GROUPS.includes(station.name)) {
+    throw new Error('Choose a valid Cyber PS intern group');
+  }
 
   return {
     unit_id: unit.id,
@@ -398,7 +402,7 @@ const handleRegister = async (req, res) => {
         .from('police_stations').select('id, name').eq('id', selectedStationId).eq('unit_id', unit_id).maybeSingle();
       if (sCustom) station = sCustom;
     }
-    if (unit.name === 'Cyber PS' && station && !['South Interns', 'North Interns'].includes(station.name)) {
+    if (unit.name === 'Cyber PS' && station && !CYBER_INTERN_GROUPS.includes(station.name)) {
       return res.status(400).json({ error: 'Choose a valid Cyber PS intern group' });
     }
     if (!station) {
