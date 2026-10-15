@@ -75,6 +75,9 @@ These SQL scripts set up all tables, RLS policies, and seed data.
 5. Repeat for:
    - **`supabase/migrations/002_rls_policies.sql`**
    - **`supabase/migrations/003_seed_units.sql`**
+   - **`supabase/migrations/004_cyber_ps_intern_groups.sql`**
+
+The fourth migration adds the **South Interns** and **North Interns** assignments under Cyber PS. Cyber PS registrations require one of these groups.
 
 ### Via `psql` (if you prefer command line):
 
@@ -82,6 +85,7 @@ These SQL scripts set up all tables, RLS policies, and seed data.
 psql -U postgres -h db.xxxxx.supabase.co -f supabase/migrations/001_initial_schema.sql
 psql -U postgres -h db.xxxxx.supabase.co -f supabase/migrations/002_rls_policies.sql
 psql -U postgres -h db.xxxxx.supabase.co -f supabase/migrations/003_seed_units.sql
+psql -U postgres -h db.xxxxx.supabase.co -f supabase/migrations/004_cyber_ps_intern_groups.sql
 ```
 
 When prompted for password, use your database password from project creation.
