@@ -1,5 +1,5 @@
 /**
- * =====================================================================
+mo * =====================================================================
  * StationTrack — Police Cybersecurity Internship Attendance System
  * Backend: Node.js + Express + Supabase (PostgreSQL + Auth + RLS)
  * 
@@ -385,13 +385,24 @@ const handleRegister = async (req, res) => {
       return res.status(400).json({ error: 'Invalid zone/unit selected' });
     }
 
+    const selectedStationId = clean(req.body.station_id);
+    if (unit.name === 'Cyber PS' && !selectedStationId) {
+      return res.status(400).json({ error: 'Select South Interns or North Interns for Cyber PS' });
+    }
+
     let station;
-    if (req.body.station_id) {
+    if (selectedStationId) {
       const { data: sCustom } = await client
-        .from('police_stations').select('id, name').eq('id', req.body.station_id).eq('unit_id', unit_id).maybeSingle();
+        .from('police_stations').select('id, name').eq('id', selectedStationId).eq('unit_id', unit_id).maybeSingle();
       if (sCustom) station = sCustom;
     }
+    if (unit.name === 'Cyber PS' && station && !['South Interns', 'North Interns'].includes(station.name)) {
+      return res.status(400).json({ error: 'Choose a valid Cyber PS intern group' });
+    }
     if (!station) {
+      if (unit.name === 'Cyber PS') {
+        return res.status(400).json({ error: 'Invalid Cyber PS intern group selected' });
+      }
       const { data: sDefault, error: sErr } = await client
         .from('police_stations').select('id, name').eq('unit_id', unit_id).order('name').limit(1).maybeSingle();
       if (sErr || !sDefault) {
