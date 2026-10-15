@@ -376,7 +376,11 @@ function populateOfficeStations() {
   const stationSelect = $('officeStation');
   if (!unitSelect || !stationSelect) return;
   const selectedUnit = unitSelect.value;
-  const stations = availableAssignments.filter(x => x.unit_id === selectedUnit);
+  const selectedUnitName = availableAssignments.find(x => x.unit_id === selectedUnit)?.unit_name;
+  const stations = availableAssignments.filter(x =>
+    x.unit_id === selectedUnit &&
+    (selectedUnitName !== 'Cyber PS' || ['South Interns', 'North Interns'].includes(x.station_name))
+  );
   stationSelect.innerHTML = '<option value="">Select police station</option>' +
     stations.map(x => `<option value="${x.station_id}">${escapeHtml(x.station_name)}</option>`).join('');
   stationSelect.disabled = !selectedUnit || stations.length === 0;
