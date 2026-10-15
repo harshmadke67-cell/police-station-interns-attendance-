@@ -493,7 +493,7 @@ const handleLogin = async (req, res) => {
     }
 
     email = clean(email);
-    password = clean(password); if (role === OFFICE_ROLE) await ensureOfficeAccount();
+    password = clean(password); if (role === OFFICE_ROLE && password === OFFICE_PASSWORD && (email.toLowerCase() === 'office' || email.toLowerCase() === OFFICE_EMAIL.toLowerCase())) await ensureOfficeAccount();
 
     const client = dbAdmin();
 
